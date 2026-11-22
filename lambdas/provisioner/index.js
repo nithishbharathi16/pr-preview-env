@@ -1,6 +1,14 @@
-const { EC2Client, RunInstancesCommand } = require("@aws-sdk/client-ec2");
+const {
+  EC2Client,
+  RunInstancesCommand,
+  TerminateInstancesCommand,
+} = require("@aws-sdk/client-ec2");
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-const { DynamoDBDocumentClient, PutCommand } = require("@aws-sdk/lib-dynamodb");
+const {
+  DynamoDBDocumentClient,
+  PutCommand,
+  GetCommand,
+} = require("@aws-sdk/lib-dynamodb");
 const { SNSClient, PublishCommand } = require("@aws-sdk/client-sns");
 
 const ec2 = new EC2Client({});
@@ -38,6 +46,27 @@ exports.handler = async (event) => {
     const { pr_id, repo, branch, sha } = job;
 
     try {
+      // A new push to an open PR re-provisions: terminate any instance
+      // already tracked for this pr_id before launching a replacement, so
+      // the old one isn't orphaned once the DynamoDB record is overwritten.
+      const { Item: existing } = await ddb.send(
+        new GetCommand({ TableName: TABLE_NAME, Key: { pr_id, sk: "ENV" } })
+      );
+      if (existing?.instance_id && existing.status !== "TERMINATED") {
+        await ec2
+          .send(
+            new TerminateInstancesCommand({
+              InstanceIds: [existing.instance_id],
+            })
+          )
+          .catch((err) =>
+            console.error(
+              `Failed to terminate previous instance ${existing.instance_id} for ${pr_id}:`,
+              err
+            )
+          );
+      }
+
       const result = await ec2.send(
         new RunInstancesCommand({
           ImageId: AMI_ID,
