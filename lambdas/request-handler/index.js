@@ -44,9 +44,17 @@ async function countActiveEnvironments() {
   return Items.length;
 }
 
+function getHeader(headers, name) {
+  if (!headers) return undefined;
+  const key = Object.keys(headers).find(
+    (k) => k.toLowerCase() === name.toLowerCase()
+  );
+  return key ? headers[key] : undefined;
+}
+
 exports.handler = async (event) => {
   const secret = process.env.GITHUB_WEBHOOK_SECRET;
-  const signature = event.headers?.["x-hub-signature-256"];
+  const signature = getHeader(event.headers, "x-hub-signature-256");
   const rawBody = event.body || "";
 
   if (secret && !verifySignature(rawBody, signature, secret)) {
