@@ -1,0 +1,21 @@
+{
+  "name": "pr-preview-env",
+  "version": "0.1.0",
+  "bin": {
+    "pr-preview-env": "bin/pr-preview-env.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "aws-cdk": "^2.160.0",
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.160.0",
+    "constructs": "^10.3.0"
+  }
+}

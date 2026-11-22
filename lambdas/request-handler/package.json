@@ -1,0 +1,11 @@
+{
+  "name": "request-handler",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "dependencies": {
+    "@aws-sdk/client-sqs": "^3.670.0",
+    "@aws-sdk/client-dynamodb": "^3.670.0",
+    "@aws-sdk/lib-dynamodb": "^3.670.0"
+  }
+}
